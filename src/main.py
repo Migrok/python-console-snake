@@ -44,6 +44,12 @@ class Snake:
         if new_direction != opposite_directions.get(self.direction):
             self.direction = new_direction
 
+class Fruit:
+
+    def __init__(self, coord, timer):
+        self.coord = coord
+        self.timer = timer
+
 def borders(stdscr, height, width):
     for y in range(0, height):
         for x in range(0, width):
@@ -59,6 +65,37 @@ def snake_init(height, width):
         y = height // 2
         snake.current_coords.append([y, x + i, curses.KEY_LEFT])
     return snake
+
+def lose_border(height, width, snake):
+    lose_or_not = 0
+    if snake.current_coords[0][0] == 0:
+        lose_or_not = 1
+    elif snake.current_coords[0][0] == height - 1:
+        lose_or_not = 1
+    elif snake.current_coords[0][1] == 0:
+        lose_or_not = 1
+    elif snake.current_coords[0][1] == width - 1:
+        lose_or_not = 1
+    return lose_or_not
+
+def lose_ouroboros(snake):
+    lose_or_not = 0
+    head = snake.current_coords[0]
+    for i in snake.current_coords[1:]:
+        if head == i:
+            lose_or_not = 1
+            break
+    return lose_or_not
+
+def game_over(stdscr, height, width):
+    stdscr.clear()
+    message = "GAME OVER"
+    start_y = height // 2
+    start_x = (width // 2) - (len(message) // 2)
+    stdscr.addstr(start_y, start_x, message, curses.A_BOLD)
+    stdscr.refresh()
+    stdscr.timeout(-1)
+    stdscr.getch()
 
 def main(stdscr):
     curses.curs_set(0)
@@ -78,6 +115,9 @@ def main(stdscr):
             snake.update_direction(key)
 
         snake.move()
+        if lose_border(height, width, snake) == 1 or lose_ouroboros(snake) == 1:
+            game_over(stdscr, height, width)
+            break
         stdscr.clear()
         borders(stdscr, height, width)
         snake.draw(stdscr)
