@@ -152,19 +152,22 @@ def frame(stdscr, height, width, snake, fruit, score):
     stdscr.refresh()
     time.sleep(0.1)
 
+def game_init(stdscr, height, width):
+    curses.start_color()
+    curses.use_default_colors()
+    curses.init_pair(1, 2, -1)
+    curses.init_pair(2, 3, -1)
+    curses.init_pair(3, 1, -1)
+    borders(stdscr, height, width)
 
 def main(stdscr):
     curses.curs_set(0)
     stdscr.nodelay(1)
     stdscr.timeout(100)
 
-    curses.start_color()
-    curses.use_default_colors()
-    curses.init_pair(1, 2, -1)
-    curses.init_pair(2, 3, -1)
-    curses.init_pair(3, 1, -1)
     height, width = 20, 40
-    borders(stdscr, height, width)
+
+    game_init(stdscr, height, width)
 
     snake = snake_init(height, width)
     fruit = fruit_init(height, width)
