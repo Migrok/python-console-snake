@@ -66,12 +66,20 @@ class Fruit:
         self.timer = timer
 
     def draw(self, stdscr):
-        if self.timer > 8:
-            stdscr.addch(self.coord[0], self.coord[1], '$')
-        elif self.timer <= 8 and self.timer % 2 == 0:
-            stdscr.addch(self.coord[0], self.coord[1], '!')
+        color = 0
+        if self.timer >= 20:
+            color = 1
+        elif self.timer > 8:
+            color = 2
         else:
-            stdscr.addch(self.coord[0], self.coord[1], '$')
+            color = 3
+
+        if self.timer > 8:
+            stdscr.addch(self.coord[0], self.coord[1], '$', curses.color_pair(color))
+        elif self.timer <= 8 and self.timer % 2 == 0:
+            stdscr.addch(self.coord[0], self.coord[1], '!', curses.color_pair(color))
+        else:
+            stdscr.addch(self.coord[0], self.coord[1], '$', curses.color_pair(color))
 
 
 def borders(stdscr, height, width):
@@ -150,6 +158,11 @@ def main(stdscr):
     stdscr.nodelay(1)
     stdscr.timeout(100)
 
+    curses.start_color()
+    curses.use_default_colors()
+    curses.init_pair(1, 2, -1)
+    curses.init_pair(2, 3, -1)
+    curses.init_pair(3, 1, -1)
     height, width = 20, 40
     borders(stdscr, height, width)
 
