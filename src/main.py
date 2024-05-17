@@ -4,9 +4,8 @@ import random
 
 
 class Snake:
-    def __init__(self, length, speed, direction, current_coords):
+    def __init__(self, length, direction, current_coords):
         self.length = length
-        self.speed = speed
         self.direction = direction
         self.current_coords = current_coords
 
@@ -66,7 +65,6 @@ class Fruit:
         self.timer = timer
 
     def draw(self, stdscr):
-        color = 0
         if self.timer >= 20:
             color = 1
         elif self.timer > 8:
@@ -75,11 +73,23 @@ class Fruit:
             color = 3
 
         if self.timer > 8:
-            stdscr.addch(self.coord[0], self.coord[1], '$', curses.color_pair(color))
+            stdscr.addch(
+                self.coord[0],
+                self.coord[1],
+                '$',
+                curses.color_pair(color))
         elif self.timer <= 8 and self.timer % 2 == 0:
-            stdscr.addch(self.coord[0], self.coord[1], '!', curses.color_pair(color))
+            stdscr.addch(
+                self.coord[0],
+                self.coord[1],
+                '!',
+                curses.color_pair(color))
         else:
-            stdscr.addch(self.coord[0], self.coord[1], '$', curses.color_pair(color))
+            stdscr.addch(
+                self.coord[0],
+                self.coord[1],
+                '$',
+                curses.color_pair(color))
 
 
 def borders(stdscr, height, width):
@@ -92,7 +102,7 @@ def borders(stdscr, height, width):
 
 
 def snake_init(height, width):
-    snake = Snake(length=4, speed=1, direction=curses.KEY_LEFT, current_coords=[])
+    snake = Snake(length=4, direction=curses.KEY_LEFT, current_coords=[])
     for i in range(snake.length):
         x = width // 2
         y = height // 2
@@ -119,18 +129,28 @@ def game_over(stdscr, height, width, score):
     stdscr.clear()
     message = "GAME OVER"
     score_message = f"Score: {score}"
+    restart_message = "Press 'r' to restart or 'q' to quit"
     start_y = height // 2
     start_x = (width // 2) - (len(message) // 2)
     stdscr.addstr(start_y, start_x, message, curses.A_BOLD)
     stdscr.addstr(start_y + 1, start_x, score_message, curses.A_BOLD)
+    stdscr.addstr(start_y + 2, start_x, restart_message, curses.A_BOLD)
     stdscr.refresh()
-    stdscr.timeout(-1)
-    stdscr.getch()
+    while True:
+        key = stdscr.getch()
+        if key == ord('r'):
+            return True
+        elif key == ord('q'):
+            return False
 
 
-def fruit_init(height, width):
-    coord_x = random.randint(1, width - 2)
-    coord_y = random.randint(1, height - 2)
+def fruit_init(height, width, current_coords):
+    while True:
+        coord_x = random.randint(1, width - 2)
+        coord_y = random.randint(1, height - 2)
+        if all(coord[0] != coord_y or coord[1] !=
+               coord_x for coord in current_coords):
+            break
     fruit = Fruit([coord_y, coord_x], 35)
     return fruit
 
@@ -152,7 +172,11 @@ def frame(stdscr, height, width, snake, fruit, score):
     stdscr.refresh()
     time.sleep(0.1)
 
+
 def game_init(stdscr, height, width):
+    curses.curs_set(0)
+    stdscr.nodelay(1)
+    stdscr.timeout(100)
     curses.start_color()
     curses.use_default_colors()
     curses.init_pair(1, 2, -1)
@@ -160,19 +184,9 @@ def game_init(stdscr, height, width):
     curses.init_pair(3, 1, -1)
     borders(stdscr, height, width)
 
-def main(stdscr):
-    curses.curs_set(0)
-    stdscr.nodelay(1)
-    stdscr.timeout(100)
 
-    height, width = 20, 40
-
-    game_init(stdscr, height, width)
-
-    snake = snake_init(height, width)
-    fruit = fruit_init(height, width)
+def game_run(stdscr, height, width, snake, fruit):
     score = 0
-
     while True:
         key = stdscr.getch()
         if key == ord('q'):
@@ -184,17 +198,29 @@ def main(stdscr):
 
         if fruit_eat(fruit, snake):
             score += 1
-            fruit = fruit_init(height, width)
+            fruit = fruit_init(height, width, snake.current_coords)
 
         fruit.timer -= 1
         if fruit.timer <= 0:
-            fruit = fruit_init(height, width)
+            fruit = fruit_init(height, width, snake.current_coords)
 
         if lose_border(height, width, snake) or lose_ouroboros(snake):
-            game_over(stdscr, height, width, score)
-            break
+            return game_over(stdscr, height, width, score)
 
         frame(stdscr, height, width, snake, fruit, score)
 
 
-curses.wrapper(main)
+def main(stdscr):
+    while True:
+        height, width = 20, 40
+
+        game_init(stdscr, height, width)
+
+        snake = snake_init(height, width)
+        fruit = fruit_init(height, width, snake.current_coords)
+        if not game_run(stdscr, height, width, snake, fruit):
+            break
+
+
+if __name__ == '__main__':
+    curses.wrapper(main)
