@@ -1,6 +1,7 @@
 import time
 from snake import *
 from fruit import *
+from records import *
 
 
 def game_init(stdscr, height, width):
@@ -101,6 +102,7 @@ def fruit_eat(fruit, snake):
         return True
     return False
 
+
 def menu(stdscr, height, width):
     stdscr.clear()
     run_message = "1.RUN"
@@ -124,106 +126,36 @@ def menu(stdscr, height, width):
             return 0
 
 
-def load_records(filename='records.txt'):
-    records = []
-    try:
-        with open(filename, 'r') as file:
-            for line in file:
-                parts = line.strip().split(',')
-                if len(parts) == 2:
-                    name, score = parts
-                    try:
-                        records.append((name, int(score)))
-                    except ValueError:
-                        pass
-        records = sorted(records, key=lambda x: x[1], reverse=True)
-    except FileNotFoundError:
-        pass
-    return records
-
-
-def add_records(name, score):
-    filename = 'records.txt'
-    with open(filename, 'w') as file:
-        file.write(f'{name},{score}\n')
-
-def show_records(stdscr, height, width, name):
-    stdscr.clear()
-    message = "Press 'c' to change name, 'q' to quit"
-    start_y = height // 2 - 5
-    start_x = (width // 2) - (len(message) // 2)
-    stdscr.addstr(start_y, start_x, message, curses.A_BOLD)
-
-    name_message = f"Your name: {name}"
-    stdscr.addstr(start_y + 1, start_x, message, curses.A_BOLD)
-
-    records_file = 'records.txt'
-    records = load_records(records_file)
-
-    for idx, (name, score) in enumerate(records[0:10], start=1):
-        record_message = f'{idx}. {name}: {score}'
-        stdscr.addstr(start_y + idx + 1, start_x, record_message)
-
-    stdscr.refresh()
-    while True:
-        key = stdscr.getch()
-        if key == ord('q'):
-            break
-        elif key == ord('c'):
-            set_name(stdscr, height, width)
-            break
-
-def set_name(stdscr, height, width):
-    while True:
-        curses.echo()
-        stdscr.clear()
-        message = "Enter your name: "
-        start_y = height // 2
-        start_x = (width // 2) - (len(message) // 2)
-        stdscr.addstr(start_y, start_x, message)
-        stdscr.refresh()
-
-        name = stdscr.getstr(start_y + 1, start_x).decode('utf-8')
-        if len(name) < 32:
-            filename = 'records.txt'
-            try:
-                with open(filename, 'r') as file:
-                    lines = file.readlines()
-                if lines:
-                    lines[0] = name + '\n'
-                with open('records.txt', 'w') as file:
-                    file.writelines(lines)
-            except FileNotFoundError:
-                with open('records.txt', 'w') as file:
-                    file.writelines(f'{name}\n')
-            return name
-        else:
-            stdscr.clear()
-            message = "Name is too long\nPress any button to change name again"
-            stdscr.addstr(start_y, start_x, message)
-            stdscr.timeout(-1)
-            stdscr.getch()
-
+def game(stdscr, height, width):
+    game_init(stdscr, height, width)
+    snake = snake_init(height, width)
+    fruit = fruit_init(height, width, snake.current_coords)
+    if not game_run(
+            stdscr,
+            height,
+            width,
+            snake,
+            fruit,
+            get_name(
+                stdscr,
+                height,
+                width)):
+        return 0
 
 
 def main(stdscr):
     height, width = 20, 40
-    try:
-        with open('records.txt', 'r') as file:
-            name = file.readline()
-    except FileNotFoundError:
-        name = set_name(stdscr, height, width)
+    get_name(stdscr, height, width)
     while True:
         player_choice = menu(stdscr, height, width)
         if player_choice == 1:
             while True:
-                game_init(stdscr, height, width)
-                snake = snake_init(height, width)
-                fruit = fruit_init(height, width, snake.current_coords)
-                if not game_run(stdscr, height, width, snake, fruit, name):
+                if not game(stdscr, height, width):
                     break
         elif player_choice == 2:
-            show_records(stdscr, height, width, name)
+            show_records(
+                stdscr, height, width, get_name(
+                    stdscr, height, width))
         elif player_choice == 0:
             break
 

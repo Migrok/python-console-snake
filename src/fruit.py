@@ -1,6 +1,7 @@
 import curses
 import random
 
+
 class Fruit:
     def __init__(self, coord, timer):
         self.coord = coord
