@@ -23,8 +23,8 @@ def game_run(stdscr, height, width, snake, fruit, name):
         key = stdscr.getch()
         if key == ord('q'):
             break
-        elif key in [curses.KEY_RIGHT, curses.KEY_LEFT,
-                     curses.KEY_UP, curses.KEY_DOWN]:
+        if key in [curses.KEY_RIGHT, curses.KEY_LEFT,
+                   curses.KEY_UP, curses.KEY_DOWN]:
             snake.update_direction(key)
 
         snake.move()
@@ -59,7 +59,7 @@ def game_over(stdscr, height, width, score, name):
         key = stdscr.getch()
         if key == ord('r'):
             return True
-        elif key == ord('q'):
+        if key == ord('q'):
             return False
 
 
@@ -76,9 +76,9 @@ def frame(stdscr, height, width, snake, fruit, score):
 def borders(stdscr, height, width):
     for y in range(0, height):
         for x in range(0, width):
-            if y == 0 or y == height - 1:
+            if y in (0, height - 1):
                 stdscr.addch(y, x, '-')
-            elif x == 0 or x == width - 1:
+            elif x in (0, width - 1):
                 stdscr.addch(y, x, '|')
 
 
@@ -125,9 +125,9 @@ def menu(stdscr, height, width):
         key = stdscr.getch()
         if key == ord('r') or key == ord('1'):
             return 1
-        elif key == ord('2'):
+        if key == ord('2'):
             return 2
-        elif key == ord('q') or key == ord('4'):
+        if key == ord('q') or key == ord('4'):
             return 0
 
 

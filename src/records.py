@@ -38,8 +38,8 @@ def show_records(stdscr, height, width, name):
     records_file = 'records.txt'
     records = load_records(records_file)
 
-    for idx, (name, score) in enumerate(records[0:10], start=1):
-        record_message = f'{idx}. {name}: {score}'
+    for idx, (records_names, score) in enumerate(records[0:10], start=1):
+        record_message = f'{idx}. {records_names}: {score}'
         stdscr.addstr(start_y + idx + 2, start_x, record_message)
 
     stdscr.refresh()
@@ -47,7 +47,7 @@ def show_records(stdscr, height, width, name):
         key = stdscr.getch()
         if key == ord('q'):
             break
-        elif key == ord('c'):
+        if key == ord('c'):
             set_name(stdscr, height, width)
             break
 
