@@ -1,7 +1,8 @@
 import time
-from snake import *
-from fruit import *
-from records import *
+import curses
+from snake import snake_init
+from fruit import fruit_init
+from records import add_records, get_name, show_records
 
 
 def game_init(stdscr, height, width):
@@ -22,7 +23,8 @@ def game_run(stdscr, height, width, snake, fruit, name):
         key = stdscr.getch()
         if key == ord('q'):
             break
-        elif key in [curses.KEY_RIGHT, curses.KEY_LEFT, curses.KEY_UP, curses.KEY_DOWN]:
+        elif key in [curses.KEY_RIGHT, curses.KEY_LEFT,
+                     curses.KEY_UP, curses.KEY_DOWN]:
             snake.update_direction(key)
 
         snake.move()
@@ -81,8 +83,10 @@ def borders(stdscr, height, width):
 
 
 def lose_border(height, width, snake):
-    if snake.current_coords[0][0] == 0 or snake.current_coords[0][0] == height - 1 or \
-            snake.current_coords[0][1] == 0 or snake.current_coords[0][1] == width - 1:
+    if (snake.current_coords[0][0] == 0
+            or snake.current_coords[0][0] == height - 1
+            or snake.current_coords[0][1] == 0
+            or snake.current_coords[0][1] == width - 1):
         return True
     return False
 
@@ -96,7 +100,8 @@ def lose_ouroboros(snake):
 
 
 def fruit_eat(fruit, snake):
-    if snake.current_coords[0][0] == fruit.coord[0] and snake.current_coords[0][1] == fruit.coord[1]:
+    if (snake.current_coords[0][0] == fruit.coord[0]
+            and snake.current_coords[0][1] == fruit.coord[1]):
         fruit.timer = 0
         snake.grow()
         return True
@@ -127,20 +132,21 @@ def menu(stdscr, height, width):
 
 
 def game(stdscr, height, width):
-    game_init(stdscr, height, width)
-    snake = snake_init(height, width)
-    fruit = fruit_init(height, width, snake.current_coords)
-    if not game_run(
-            stdscr,
-            height,
-            width,
-            snake,
-            fruit,
-            get_name(
+    while True:
+        game_init(stdscr, height, width)
+        snake = snake_init(height, width)
+        fruit = fruit_init(height, width, snake.current_coords)
+        if not game_run(
                 stdscr,
                 height,
-                width)):
-        return 0
+                width,
+                snake,
+                fruit,
+                get_name(
+                    stdscr,
+                    height,
+                    width)):
+            return 0
 
 
 def main(stdscr):

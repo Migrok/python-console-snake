@@ -65,6 +65,7 @@ def set_name(stdscr, height, width):
 
         name = stdscr.getstr(start_y + 1, start_x).decode('utf-8')
         if len(name) < 32:
+            curses.noecho()
             filename = 'records.txt'
             try:
                 with open(filename, 'r') as file:
